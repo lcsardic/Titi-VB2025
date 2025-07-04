@@ -1,0 +1,1545 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vision Board + Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            font-size: 16px;
+            font-weight: 500;
+            color: #666;
+            transition: all 0.3s ease;
+        }
+        
+        .tab.active {
+            background: white;
+            color: #333;
+            border-bottom: 3px solid #FF6B6B;
+        }
+        
+        .tab:hover {
+            background: #e9ecef;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .section-title {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+            font-size: 1.8em;
+            font-weight: 600;
+        }
+        
+        .tracker-section {
+            display: none;
+        }
+        
+        .tracker-section.active {
+            display: block;
+        }
+        
+        .vision-board {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .category-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            border-left: 5px solid;
+            transition: transform 0.3s ease;
+        }
+        
+        .category-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .category-card.health { border-left-color: #4ECDC4; }
+        .category-card.wealth { border-left-color: #45B7D1; }
+        .category-card.knowledge { border-left-color: #96CEB4; }
+        .category-card.lifestyle { border-left-color: #FFEAA7; }
+        .category-card.fun { border-left-color: #FF6B6B; }
+        .category-card.family { border-left-color: #DDA0DD; }
+        .category-card.relationships { border-left-color: #98D8C8; }
+        
+        .category-title {
+            font-size: 1.4em;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .goal-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            padding: 8px;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+        
+        .goal-checkbox {
+            margin-right: 12px;
+            width: 20px;
+            height: 20px;
+            accent-color: #FF6B6B;
+        }
+        
+        .goal-text {
+            flex: 1;
+            font-size: 14px;
+            color: #555;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+            transition: width 0.3s ease;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .metric-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .metric-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #FF6B6B;
+            margin-bottom: 5px;
+        }
+        
+        .metric-label {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .weekly-tracker {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .week-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .day-cell {
+            aspect-ratio: 1;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 12px;
+            color: #666;
+            user-select: none;
+        }
+        
+        .day-cell.completed {
+            background: #4ECDC4;
+            border-color: #4ECDC4;
+            color: white;
+        }
+        
+        .day-cell:hover {
+            border-color: #FF6B6B;
+            transform: scale(1.05);
+        }
+        
+        .meta-text {
+            grid-column: span 3;
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            cursor: default;
+        }
+        
+        .score-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .month-header {
+            grid-column: 1 / -1;
+            text-align: center;
+            font-weight: bold;
+            color: white;
+            font-size: 1.1em;
+            margin: 20px 0 10px 0;
+            padding: 10px;
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+            border-radius: 10px;
+        }
+        
+        .week-score {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid #e9ecef;
+        }
+        
+        .week-score:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            border-color: #FF6B6B;
+        }
+        
+        .week-score.current {
+            border-color: #FF6B6B;
+            background: linear-gradient(45deg, #FF6B6B10, #4ECDC410);
+        }
+        
+        .week-number {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .score-value {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .score-rank {
+            font-size: 1.2em;
+        }
+        
+        .close-week-btn {
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 20px auto;
+            display: block;
+            transition: all 0.3s ease;
+        }
+        
+        .close-week-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 107, 107, 0.3);
+        }
+        
+        .project-timeline {
+            margin-top: 15px;
+        }
+        
+        .step-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            padding: 12px;
+            border-radius: 8px;
+            background: #f8f9fa;
+            border-left: 3px solid #e9ecef;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .step-item.completed {
+            background: #d4edda;
+            border-left-color: #28a745;
+        }
+        
+        .step-item.current {
+            background: #fff3cd;
+            border-left-color: #ffc107;
+            box-shadow: 0 2px 8px rgba(255, 193, 7, 0.2);
+        }
+        
+        .step-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .step-checkbox {
+            min-width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-weight: bold;
+            background: white;
+            border: 2px solid #e9ecef;
+        }
+        
+        .step-item.completed .step-checkbox {
+            background: #28a745;
+            color: white;
+            border-color: #28a745;
+        }
+        
+        .step-item.current .step-checkbox {
+            background: #ffc107;
+            color: #212529;
+            border-color: #ffc107;
+        }
+        
+        .step-content {
+            flex: 1;
+        }
+        
+        .step-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .step-date {
+            font-size: 12px;
+            color: #666;
+            font-style: italic;
+        }
+        
+        .project-summary {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            margin-top: 30px;
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .summary-card {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .summary-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #FF6B6B;
+            margin-bottom: 5px;
+        }
+        
+        .summary-label {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .insights-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 20px;
+        }
+        
+        .insights-title {
+            font-size: 1.3em;
+            margin-bottom: 15px;
+        }
+        
+        .insight-item {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            backdrop-filter: blur(10px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>✨ Mi Vision Board 2025 ✨</h1>
+            <p>Sistema integral de seguimiento - Aplicando la metodología de "decisiones hormigas"</p>
+        </div>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="showSection('vision')">Vision Board</button>
+            <button class="tab" onclick="showSection('tracker')">Seguimiento</button>
+            <button class="tab" onclick="showSection('ranking')">Ranking</button>
+            <button class="tab" onclick="showSection('projects')">Proyectos</button>
+            <button class="tab" onclick="showSection('insights')">Insights</button>
+        </div>
+        
+        <div class="content">
+            <!-- VISION BOARD SECTION -->
+            <div id="vision-section" class="tracker-section active">
+                <div class="section-title">✨ Mi Vision Board 2025</div>
+                <div class="vision-board">
+                    <div class="category-card health">
+                        <div class="category-title">🏃‍♀️ HEALTH</div>
+                        <div class="goal-item">
+                            <input type="checkbox" class="goal-checkbox">
+                            <div class="goal-text">Hacer 30 minutos de ejercicio diarios</div>
+                        </div>
+                        <div class="goal-item">
+                            <input type="checkbox" class="goal-checkbox">
+                            <div class="goal-text">Culminar programa Alquimia II</div>
+                        </div>
+                        <div class="goal-item">
+                            <input type="checkbox" class="goal-checkbox">
+                            <div class="goal-text">Mantener terapia semanal desde octubre</div>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 65%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="category-card wealth">
+                        <div class="category-title">💰 WEALTH</div>
+                        <div class="goal-item">
+                            <input type="checkbox" class="goal-checkbox">
+                            <div class="goal-text">Mantener deudas en cero</div>
+                        </div>
+                        <div class="goal-item">
+                            <input type="checkbox" class="goal-checkbox">
+                            <div class="goal-text">Respetar mi presupuesto</div>
+                        </div>
+                        <div class="goal-item">
+                            <input type="checkbox" class="goal-checkbox">
+                            <div class="goal-text">Desarrollar proyectos alternativos</div>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 80%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="category-card knowledge">
+                        <div class="category-title">📚 KNOWLEDGE</div>
+                        <div class="goal-item">
+                            <input type="checkbox" class="goal-checkbox">
+                            <div class="goal-text">Curso de cocina</div>
+                        </div>
+                        <div class="goal-item">
+                            <input type="checkbox" class="goal-checkbox">
+                            <div class="goal-text">Leer 1 libro desarrollo/mes</div>
+                        </div>
+                        <div class="goal-item">
+                            <input type="checkbox" class="goal-checkbox">
+                            <div class="goal-text">Nivel 30 DROPS Portugués</div>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 45%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="category-card lifestyle">
+                        <div class="category-title">🌟 LIFESTYLE</div>
+                        <div class="goal-item">
+                            <input type="checkbox" class="goal-checkbox">
+                            <div class="goal-text">Cambiar teléfono</div>
+                        </div>
+                        <div class="goal-item">
+                            <input type="checkbox" class="goal-checkbox">
+                            <div class="goal-text">Cambiar colchón</div>
+                        </div>
+                        <div class="goal-item">
+                            <input type="checkbox" class="goal-checkbox">
+                            <div class="goal-text">Iniciar voluntariado</div>
+                        </div>
+                        <div class="goal-item">
+                            <input type="checkbox" class="goal-checkbox">
+                            <div class="goal-text">Rutina ejercicios y meditación</div>
+                        </div>
+                        <div class="goal-item">
+                            <input type="checkbox" class="goal-checkbox">
+                            <div class="goal-text">Tiempo para autocuidado</div>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 35%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="category-card fun">
+                        <div class="category-title">🎉 FUN THINGS</div>
+                        <div class="goal-item">
+                            <input type="checkbox" class="goal-checkbox">
+                            <div class="goal-text">Viaje a la playa</div>
+                        </div>
+                        <div class="goal-item">
+                            <input type="checkbox" class="goal-checkbox">
+                            <div class="goal-text">Viaje a Panamá en diciembre</div>
+                        </div>
+                        <div class="goal-item">
+                            <input type="checkbox" class="goal-checkbox">
+                            <div class="goal-text">Terminar y compartir mi libro</div>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 20%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="category-card family">
+                        <div class="category-title">👨‍👩‍👧‍👦 FAMILY</div>
+                        <div class="goal-item">
+                            <input type="checkbox" class="goal-checkbox">
+                            <div class="goal-text">Estar pendiente sin sacrificar límites</div>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 70%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="category-card relationships">
+                        <div class="category-title">💕 RELATIONSHIPS</div>
+                        <div class="goal-item">
+                            <input type="checkbox" class="goal-checkbox">
+                            <div class="goal-text">Mantener conexión con amigas</div>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 75%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- TRACKER SECTION -->
+            <div id="tracker-section" class="tracker-section">
+                <div class="section-title">📊 Seguimiento Esta Semana</div>
+                
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-value" id="exercise-count">5</div>
+                        <div class="metric-label">Días ejercicio esta semana</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value" id="therapy-count">1</div>
+                        <div class="metric-label">Citas psicóloga esta semana</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value" id="meditation-count">5</div>
+                        <div class="metric-label">Días meditación esta semana</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value" id="portuguese-count">5</div>
+                        <div class="metric-label">Días portugués esta semana</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value" id="book-count">2</div>
+                        <div class="metric-label">Sesiones escritura esta semana</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value" id="family-count">1</div>
+                        <div class="metric-label">Check-ins familiares</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value" id="friends-count">3</div>
+                        <div class="metric-label">Conexiones con amigas</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value" id="budget-score">SÍ ✅</div>
+                        <div class="metric-label">Cumplimiento presupuesto</div>
+                    </div>
+                </div>
+                
+                <div class="weekly-tracker">
+                    <h3>🏃‍♀️ Ejercicio Diario</h3>
+                    <div class="week-grid" data-tracker="exercise">
+                        <div class="day-cell completed">L</div>
+                        <div class="day-cell completed">M</div>
+                        <div class="day-cell">M</div>
+                        <div class="day-cell completed">J</div>
+                        <div class="day-cell completed">V</div>
+                        <div class="day-cell completed">S</div>
+                        <div class="day-cell">D</div>
+                    </div>
+                </div>
+                
+                <div class="weekly-tracker">
+                    <h3>🧠 Citas con Psicóloga</h3>
+                    <div class="week-grid" data-tracker="therapy">
+                        <div class="day-cell completed">S1</div>
+                        <div class="day-cell">S2</div>
+                        <div class="day-cell">S3</div>
+                        <div class="day-cell">S4</div>
+                        <div class="meta-text">Meta: 1 sesión/semana</div>
+                    </div>
+                </div>
+                
+                <div class="weekly-tracker">
+                    <h3>🧘‍♀️ Meditación</h3>
+                    <div class="week-grid" data-tracker="meditation">
+                        <div class="day-cell completed">L</div>
+                        <div class="day-cell">M</div>
+                        <div class="day-cell completed">M</div>
+                        <div class="day-cell completed">J</div>
+                        <div class="day-cell">V</div>
+                        <div class="day-cell completed">S</div>
+                        <div class="day-cell completed">D</div>
+                    </div>
+                </div>
+                
+                <div class="weekly-tracker">
+                    <h3>🇵🇹 Portugués (DROPS)</h3>
+                    <div class="week-grid" data-tracker="portuguese">
+                        <div class="day-cell completed">L</div>
+                        <div class="day-cell completed">M</div>
+                        <div class="day-cell">M</div>
+                        <div class="day-cell completed">J</div>
+                        <div class="day-cell completed">V</div>
+                        <div class="day-cell">S</div>
+                        <div class="day-cell completed">D</div>
+                    </div>
+                </div>
+                
+                <div class="weekly-tracker">
+                    <h3>📖 Progreso del Libro</h3>
+                    <div class="week-grid" data-tracker="book">
+                        <div class="day-cell completed">S1</div>
+                        <div class="day-cell completed">S2</div>
+                        <div class="day-cell">S3</div>
+                        <div class="day-cell">S4</div>
+                        <div class="meta-text">Meta: escribir 3x/semana</div>
+                    </div>
+                </div>
+                
+                <div class="weekly-tracker">
+                    <h3>👨‍👩‍👧‍👦 Check-in Familiar</h3>
+                    <div class="week-grid" data-tracker="family">
+                        <div class="day-cell completed">S1</div>
+                        <div class="day-cell">S2</div>
+                        <div class="day-cell">S3</div>
+                        <div class="day-cell">S4</div>
+                        <div class="meta-text">Meta: contacto significativo semanal</div>
+                    </div>
+                </div>
+                
+                <div class="weekly-tracker">
+                    <h3>💕 Conexión con Amigas</h3>
+                    <div class="week-grid" data-tracker="friends">
+                        <div class="day-cell completed">S1</div>
+                        <div class="day-cell">S2</div>
+                        <div class="day-cell completed">S3</div>
+                        <div class="day-cell completed">S4</div>
+                        <div class="meta-text">Meta: 2-3 conexiones/semana</div>
+                    </div>
+                </div>
+                
+                <div class="weekly-tracker">
+                    <h3>💰 Cumplimiento Presupuesto</h3>
+                    <div class="week-grid" data-tracker="budget">
+                        <div class="day-cell completed">✓</div>
+                        <div class="meta-text" style="grid-column: span 6;">¿Cumpliste tu presupuesto esta semana?</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- RANKING SECTION -->
+            <div id="ranking-section" class="tracker-section">
+                <div class="section-title">📈 Tu Rating Semanal Julio - Diciembre 2025</div>
+                
+                <div class="metrics-grid" style="margin-bottom: 40px;">
+                    <div class="metric-card">
+                        <div class="metric-value" id="current-week-score">92%</div>
+                        <div class="metric-label">Score esta semana</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value" id="average-score">92%</div>
+                        <div class="metric-label">Promedio general</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value" id="best-week">92%</div>
+                        <div class="metric-label">Mejor semana</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value" id="streak-count">1</div>
+                        <div class="metric-label">Semanas 90%+</div>
+                    </div>
+                </div>
+                
+                <div class="weekly-tracker">
+                    <h3>🚀 Control de Semana</h3>
+                    <div style="text-align: center; margin-top: 15px;">
+                        <p>Estás en: <strong>Semana <span id="current-week-number">1</span> - Julio</strong></p>
+                        <p>Score actual: <strong><span id="live-score">92%</span></strong></p>
+                        <button class="close-week-btn" onclick="requestWeekTransition()">🏁 Cerrar Semana y Avanzar</button>
+                        <button class="close-week-btn" onclick="undoWeekTransition()" style="background: #6c757d; margin-top: 10px;">🔄 Deshacer Última Semana</button>
+                        <p style="font-size: 12px; color: #666; margin-top: 10px;">
+                            💡 Tip: Cierra tu semana cada domingo para mantener el momentum<br>
+                            🔄 Si cierras por error, puedes deshacerlo inmediatamente
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="weekly-tracker">
+                    <h3>🏆 Evolución Julio - Diciembre (26 semanas)</h3>
+                    <div class="score-grid">
+                        <!-- JULIO -->
+                        <div class="month-header">JULIO</div>
+                        <div class="week-score current" data-week="1">
+                            <div class="week-number">S1</div>
+                            <div class="score-value">92%</div>
+                            <div class="score-rank">🥈</div>
+                        </div>
+                        <div class="week-score" data-week="2">
+                            <div class="week-number">S2</div>
+                            <div class="score-value">--</div>
+                            <div class="score-rank">⏳</div>
+                        </div>
+                        <div class="week-score" data-week="3">
+                            <div class="week-number">S3</div>
+                            <div class="score-value">--</div>
+                            <div class="score-rank">⏳</div>
+                        </div>
+                        <div class="week-score" data-week="4">
+                            <div class="week-number">S4</div>
+                            <div class="score-value">--</div>
+                            <div class="score-rank">⏳</div>
+                        </div>
+                        
+                        <!-- AGOSTO -->
+                        <div class="month-header">AGOSTO</div>
+                        <div class="week-score" data-week="5">
+                            <div class="week-number">S5</div>
+                            <div class="score-value">--</div>
+                            <div class="score-rank">⏳</div>
+                        </div>
+                        <div class="week-score" data-week="6">
+                            <div class="week-number">S6</div>
+                            <div class="score-value">--</div>
+                            <div class="score-rank">⏳</div>
+                        </div>
+                        <div class="week-score" data-week="7">
+                            <div class="week-number">S7</div>
+                            <div class="score-value">--</div>
+                            <div class="score-rank">⏳</div>
+                        </div>
+                        <div class="week-score" data-week="8">
+                            <div class="week-number">S8</div>
+                            <div class="score-value">--</div>
+                            <div class="score-rank">⏳</div>
+                        </div>
+                        
+                        <!-- SEPTIEMBRE -->
+                        <div class="month-header">SEPTIEMBRE</div>
+                        <div class="week-score" data-week="9">
+                            <div class="week-number">S9</div>
+                            <div class="score-value">--</div>
+                            <div class="score-rank">⏳</div>
+                        </div>
+                        <div class="week-score" data-week="10">
+                            <div class="week-number">S10</div>
+                            <div class="score-value">--</div>
+                            <div class="score-rank">⏳</div>
+                        </div>
+                        <div class="week-score" data-week="11">
+                            <div class="week-number">S11</div>
+                            <div class="score-value">--</div>
+                            <div class="score-rank">⏳</div>
+                        </div>
+                        <div class="week-score" data-week="12">
+                            <div class="week-number">S12</div>
+                            <div class="score-value">--</div>
+                            <div class="score-rank">⏳</div>
+                        </div>
+                        
+                        <!-- OCTUBRE -->
+                        <div class="month-header">OCTUBRE</div>
+                        <div class="week-score" data-week="13">
+                            <div class="week-number">S13</div>
+                            <div class="score-value">--</div>
+                            <div class="score-rank">⏳</div>
+                        </div>
+                        <div class="week-score" data-week="14">
+                            <div class="week-number">S14</div>
+                            <div class="score-value">--</div>
+                            <div class="score-rank">⏳</div>
+                        </div>
+                        <div class="week-score" data-week="15">
+                            <div class="week-number">S15</div>
+                            <div class="score-value">--</div>
+                            <div class="score-rank">⏳</div>
+                        </div>
+                        <div class="week-score" data-week="16">
+                            <div class="week-number">S16</div>
+                            <div class="score-value">--</div>
+                            <div class="score-rank">⏳</div>
+                        </div>
+                        
+                        <!-- NOVIEMBRE -->
+                        <div class="month-header">NOVIEMBRE</div>
+                        <div class="week-score" data-week="17">
+                            <div class="week-number">S17</div>
+                            <div class="score-value">--</div>
+                            <div class="score-rank">⏳</div>
+                        </div>
+                        <div class="week-score" data-week="18">
+                            <div class="week-number">S18</div>
+                            <div class="score-value">--</div>
+                            <div class="score-rank">⏳</div>
+                        </div>
+                        <div class="week-score" data-week="19">
+                            <div class="week-number">S19</div>
+                            <div class="score-value">--</div>
+                            <div class="score-rank">⏳</div>
+                        </div>
+                        <div class="week-score" data-week="20">
+                            <div class="week-number">S20</div>
+                            <div class="score-value">--</div>
+                            <div class="score-rank">⏳</div>
+                        </div>
+                        
+                        <!-- DICIEMBRE -->
+                        <div class="month-header">DICIEMBRE</div>
+                        <div class="week-score" data-week="21">
+                            <div class="week-number">S21</div>
+                            <div class="score-value">--</div>
+                            <div class="score-rank">⏳</div>
+                        </div>
+                        <div class="week-score" data-week="22">
+                            <div class="week-number">S22</div>
+                            <div class="score-value">--</div>
+                            <div class="score-rank">⏳</div>
+                        </div>
+                        <div class="week-score" data-week="23">
+                            <div class="week-number">S23</div>
+                            <div class="score-value">--</div>
+                            <div class="score-rank">⏳</div>
+                        </div>
+                        <div class="week-score" data-week="24">
+                            <div class="week-number">S24</div>
+                            <div class="score-value">--</div>
+                            <div class="score-rank">⏳</div>
+                        </div>
+                        <div class="week-score" data-week="25">
+                            <div class="week-number">S25</div>
+                            <div class="score-value">--</div>
+                            <div class="score-rank">⏳</div>
+                        </div>
+                        <div class="week-score" data-week="26">
+                            <div class="week-number">S26</div>
+                            <div class="score-value">--</div>
+                            <div class="score-rank">⏳</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="weekly-tracker">
+                    <h3>🎯 Sistema de Rating</h3>
+                    <div style="margin-top: 15px;">
+                        <div class="insight-item" style="background: #f8f9fa; color: #333; margin-bottom: 10px;">
+                            <strong>📊 Cómo se calcula tu score semanal:</strong><br>
+                            • Base: 70 puntos<br>
+                            • Ejercicio: +3 puntos por día (máx +21)<br>
+                            • Meditación: +2 puntos por día (máx +14)<br>
+                            • Portugués: +1 punto por día (máx +7)<br>
+                            • Presupuesto cumplido: +8 puntos<br>
+                            • Terapia: +5 puntos por sesión<br>
+                            • Escritura: +3 puntos por sesión<br>
+                            • Familia/Amigas: +2 puntos por conexión
+                        </div>
+                        <div class="insight-item" style="background: #d4edda; color: #155724; margin-bottom: 10px;">
+                            <strong>🏆 Rankings:</strong><br>
+                            🥇 95-100%: Legendary<br>
+                            🥈 90-94%: Excellent<br>
+                            🥉 85-89%: Very Good<br>
+                            ⭐ 80-84%: Good<br>
+                            📈 75-79%: Keep Pushing<br>
+                            💪 70-74%: Building Momentum
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- PROJECTS SECTION -->
+            <div id="projects-section" class="tracker-section">
+                <div class="section-title">🎯 Proyectos en Progreso</div>
+                <div class="content-wrapper">
+                    <div class="vision-board">
+                    <div class="category-card knowledge">
+                        <div class="category-title">📚 Curso de Cocina</div>
+                        <div class="project-timeline">
+                            <div class="step-item completed">
+                                <div class="step-checkbox">✓</div>
+                                <div class="step-content">
+                                    <div class="step-title">Investigar opciones de cursos</div>
+                                    <div class="step-date">Completado</div>
+                                </div>
+                            </div>
+                            <div class="step-item current">
+                                <div class="step-checkbox">📍</div>
+                                <div class="step-content">
+                                    <div class="step-title">Comparar precios y horarios</div>
+                                    <div class="step-date">En progreso</div>
+                                </div>
+                            </div>
+                            <div class="step-item">
+                                <div class="step-checkbox">○</div>
+                                <div class="step-content">
+                                    <div class="step-title">Inscribirme en el curso elegido</div>
+                                    <div class="step-date">Próximo paso</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="category-card fun">
+                        <div class="category-title">🏖️ Viaje a la Playa</div>
+                        <div class="project-timeline">
+                            <div class="step-item">
+                                <div class="step-checkbox">○</div>
+                                <div class="step-content">
+                                    <div class="step-title">Definir fechas disponibles</div>
+                                    <div class="step-date">Esta semana</div>
+                                </div>
+                            </div>
+                            <div class="step-item">
+                                <div class="step-checkbox">○</div>
+                                <div class="step-content">
+                                    <div class="step-title">Investigar destinos y precios</div>
+                                    <div class="step-date">Próxima semana</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="category-card lifestyle">
+                        <div class="category-title">📱 Cambiar Teléfono</div>
+                        <div class="project-timeline">
+                            <div class="step-item">
+                                <div class="step-checkbox">○</div>
+                                <div class="step-content">
+                                    <div class="step-title">Investigar modelos y precios</div>
+                                    <div class="step-date">Esta semana</div>
+                                </div>
+                            </div>
+                            <div class="step-item">
+                                <div class="step-checkbox">○</div>
+                                <div class="step-content">
+                                    <div class="step-title">Revisar presupuesto disponible</div>
+                                    <div class="step-date">Esta semana</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    </div>
+                    
+                    <div class="project-summary">
+                        <h3>📊 Resumen de Proyectos</h3>
+                        <div class="summary-grid">
+                            <div class="summary-card">
+                                <div class="summary-number" id="active-projects">3</div>
+                                <div class="summary-label">Proyectos activos</div>
+                            </div>
+                            <div class="summary-card">
+                                <div class="summary-number" id="completed-steps">1</div>
+                                <div class="summary-label">Pasos completados</div>
+                            </div>
+                            <div class="summary-card">
+                                <div class="summary-number" id="progress-percent">15%</div>
+                                <div class="summary-label">Progreso general</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- INSIGHTS SECTION -->
+            <div id="insights-section" class="tracker-section">
+                <div class="section-title">🔍 Insights y Análisis</div>
+                <div class="insights-section">
+                    <div class="insights-title">🔍 Insights Esta Semana</div>
+                    <div class="insight-item">
+                        <strong>🎉 ¡Excelente!</strong> Cumpliste tu meta de ejercicio 5/7 días. ¡Sigue así!
+                    </div>
+                    <div class="insight-item">
+                        <strong>💪 Fortaleza:</strong> Perfecta constancia en meditación. Tu bienestar mental está en forma.
+                    </div>
+                    <div class="insight-item">
+                        <strong>📈 Progreso:</strong> Buen avance en portugués. Solo 2 días más para completar la semana perfecta.
+                    </div>
+                    <div class="insight-item">
+                        <strong>💡 Oportunidad:</strong> Considera escribir tu libro después de meditar - cuando tu mente está más clara.
+                    </div>
+                </div>
+                
+                <div class="weekly-tracker">
+                    <h3>📊 Tu Semana en Números</h3>
+                    <div style="margin-top: 15px;">
+                        <p><strong>🏆 Área más fuerte:</strong> Meditación (5/7 días) y Ejercicio (5/7 días)</p>
+                        <p><strong>🎯 Área de oportunidad:</strong> Escritura del libro (2/3 sesiones goal)</p>
+                        <p><strong>⚡ Streak más largo:</strong> 3 días consecutivos de ejercicio + meditación</p>
+                        <p><strong>🔥 Motivación:</strong> ¡Vas súper bien! Solo ajusta pequeños detalles.</p>
+                    </div>
+                </div>
+                
+                <div id="dynamic-alerts" class="weekly-tracker">
+                    <h3>🎯 Alertas Dinámicas</h3>
+                    <div id="alerts-content">
+                        <p>Haz click en los trackers semanales para ver alertas personalizadas aquí.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Global variables for week management
+        let currentWeek = 1;
+        let weekScores = {};
+        let lastWeekBackup = null; // For undo functionality
+        
+        function showSection(sectionName) {
+            // Hide all sections
+            document.querySelectorAll('.tracker-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected section
+            document.getElementById(sectionName + '-section').classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+        
+        // FIXED: Only clickable day cells
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.day-cell').forEach(cell => {
+                // Skip meta-text cells
+                if (cell.classList.contains('meta-text')) {
+                    return;
+                }
+                
+                cell.addEventListener('click', function() {
+                    this.classList.toggle('completed');
+                    updateMetrics();
+                });
+            });
+            
+            // Initialize
+            updateMetrics();
+            updateProgressBars();
+            updateProjectProgress();
+        });
+        
+        // Simple checkbox functionality
+        document.querySelectorAll('.goal-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const goalItem = this.closest('.goal-item');
+                if (this.checked) {
+                    goalItem.style.background = '#d4edda';
+                    goalItem.style.color = '#155724';
+                } else {
+                    goalItem.style.background = '#f8f9fa';
+                    goalItem.style.color = '#555';
+                }
+                updateProgressBars();
+            });
+        });
+        
+        // Enhanced step functionality with undo capability
+        document.querySelectorAll('.step-item').forEach(step => {
+            step.addEventListener('click', function() {
+                if (this.classList.contains('completed')) {
+                    // Allow unchecking completed steps
+                    this.classList.remove('completed');
+                    this.classList.add('current');
+                    this.querySelector('.step-checkbox').textContent = '📍';
+                } else if (this.classList.contains('current')) {
+                    // Move from current to completed
+                    this.classList.remove('current');
+                    this.classList.add('completed');
+                    this.querySelector('.step-checkbox').textContent = '✓';
+                } else {
+                    // Move from pending to current
+                    this.classList.add('current');
+                    this.querySelector('.step-checkbox').textContent = '📍';
+                }
+                updateProjectProgress();
+            });
+        });
+        
+        // Update metrics function - FIXED
+        function updateMetrics() {
+            // Exercise tracker
+            const exerciseCells = document.querySelector('[data-tracker="exercise"]').querySelectorAll('.day-cell.completed');
+            document.getElementById('exercise-count').textContent = exerciseCells.length;
+            
+            // Therapy tracker
+            const therapyCells = document.querySelector('[data-tracker="therapy"]').querySelectorAll('.day-cell.completed');
+            document.getElementById('therapy-count').textContent = therapyCells.length;
+            
+            // Meditation tracker
+            const meditationCells = document.querySelector('[data-tracker="meditation"]').querySelectorAll('.day-cell.completed');
+            document.getElementById('meditation-count').textContent = meditationCells.length;
+            
+            // Portuguese tracker
+            const portugueseCells = document.querySelector('[data-tracker="portuguese"]').querySelectorAll('.day-cell.completed');
+            document.getElementById('portuguese-count').textContent = portugueseCells.length;
+            
+            // Book tracker
+            const bookCells = document.querySelector('[data-tracker="book"]').querySelectorAll('.day-cell.completed');
+            document.getElementById('book-count').textContent = bookCells.length;
+            
+            // Family tracker
+            const familyCells = document.querySelector('[data-tracker="family"]').querySelectorAll('.day-cell.completed');
+            document.getElementById('family-count').textContent = familyCells.length;
+            
+            // Friends tracker
+            const friendsCells = document.querySelector('[data-tracker="friends"]').querySelectorAll('.day-cell.completed');
+            document.getElementById('friends-count').textContent = friendsCells.length;
+            
+            // Budget tracker
+            const budgetCells = document.querySelector('[data-tracker="budget"]').querySelectorAll('.day-cell.completed');
+            const budgetComplied = budgetCells.length > 0 ? 1 : 0;
+            document.getElementById('budget-score').textContent = budgetComplied ? 'SÍ ✅' : 'NO ❌';
+            
+            // Calculate weekly score
+            calculateWeeklyScore();
+            updateDynamicAlerts();
+        }
+        
+        // Calculate weekly score based on all activities
+        function calculateWeeklyScore() {
+            const exerciseCount = parseInt(document.getElementById('exercise-count').textContent);
+            const therapyCount = parseInt(document.getElementById('therapy-count').textContent);
+            const meditationCount = parseInt(document.getElementById('meditation-count').textContent);
+            const portugueseCount = parseInt(document.getElementById('portuguese-count').textContent);
+            const bookCount = parseInt(document.getElementById('book-count').textContent);
+            const familyCount = parseInt(document.getElementById('family-count').textContent);
+            const friendsCount = parseInt(document.getElementById('friends-count').textContent);
+            const budgetComplied = document.querySelector('[data-tracker="budget"] .day-cell.completed') ? 1 : 0;
+            
+            // Scoring system
+            let score = 70; // Base score
+            score += exerciseCount * 3;    // Max +21 (7 days * 3)
+            score += meditationCount * 2;  // Max +14 (7 days * 2)
+            score += portugueseCount * 1;  // Max +7 (7 days * 1)
+            score += budgetComplied * 8;   // +8 for budget compliance
+            score += therapyCount * 5;     // +5 per therapy session
+            score += bookCount * 3;        // +3 per writing session
+            score += familyCount * 2;      // +2 per family check-in
+            score += friendsCount * 2;     // +2 per friend connection
+            
+            // Cap at 100
+            score = Math.min(score, 100);
+            
+            // Update displays
+            document.getElementById('current-week-score').textContent = score + '%';
+            document.getElementById('live-score').textContent = score + '%';
+            
+            // Update rank emoji
+            let rank = getRankEmoji(score);
+            
+            // Update current week in score grid
+            const currentWeekElement = document.querySelector('.week-score.current');
+            if (currentWeekElement) {
+                currentWeekElement.querySelector('.score-value').textContent = score + '%';
+                currentWeekElement.querySelector('.score-rank').textContent = rank;
+                currentWeekElement.setAttribute('data-score', score);
+            }
+            
+            return score;
+        }
+        
+        // Get rank emoji based on score
+        function getRankEmoji(score) {
+            if (score >= 95) return '🥇';
+            else if (score >= 90) return '🥈';
+            else if (score >= 85) return '🥉';
+            else if (score >= 80) return '⭐';
+            else if (score >= 75) return '📈';
+            else return '💪';
+        }
+        
+        // Get motivational message based on score
+        function getMotivationalMessage(score) {
+            if (score >= 95) return '¡LEGENDARY! Estás siendo la mejor versión de ti misma. ¡Sigue brillando! ✨';
+            else if (score >= 90) return '¡EXCELENTE! Tu constancia está dando frutos increíbles. ¡Vas por buen camino! 🔥';
+            else if (score >= 85) return '¡MUY BIEN! Tienes un ritmo sólido. Solo algunos ajustes y serás imparable. 💪';
+            else if (score >= 80) return '¡BIEN! Has construido buenos hábitos. La próxima semana puedes dar ese salto extra. 📈';
+            else if (score >= 75) return 'Sigue empujando. Cada pequeño paso cuenta. ¡La constancia te llevará lejos! 🌟';
+            else return 'Nueva semana, nueva oportunidad. ¡Tú puedes hacer esto! Enfócate en las decisiones hormigas. 🚀';
+        }
+        
+        // Week transition functions - FIXED VERSION
+        function requestWeekTransition() {
+            try {
+                const finalScore = calculateWeeklyScore();
+                const rank = getRankEmoji(finalScore);
+                const message = getMotivationalMessage(finalScore);
+                
+                // Simple confirm dialog
+                const result = confirm(`🎉 ¡SEMANA COMPLETADA! 🎉
+
+Tu Score Final: ${finalScore}% ${rank}
+
+${message}
+
+¿Quieres cerrar esta semana y empezar la siguiente?
+
+✅ Aceptar = Empezar nueva semana
+❌ Cancelar = Seguir editando`);
+                
+                if (result) {
+                    confirmWeekTransitionSimple();
+                }
+                
+            } catch (error) {
+                console.error("🚨 ERROR in requestWeekTransition:", error);
+                alert("🚨 ERROR: " + error.message);
+            }
+        }
+        
+        function confirmWeekTransitionSimple() {
+            const finalScore = calculateWeeklyScore();
+            
+            // Create backup for undo functionality
+            lastWeekBackup = {
+                weekNumber: currentWeek,
+                score: finalScore,
+                trackerState: captureTrackerState()
+            };
+            
+            // Save current week score
+            weekScores[currentWeek] = finalScore;
+            
+            // Move to next week
+            currentWeek++;
+            
+            // Update UI
+            updateCurrentWeekDisplay();
+            resetWeeklyTrackers();
+            updateWeekScoreDisplay();
+            updateOverallStats();
+            
+            // Show success message with undo option
+            const result = confirm(`🎉 ¡BIENVENIDA A LA SEMANA ${currentWeek}! 🎉
+
+Tu score anterior: ${finalScore}% 
+¡Ha sido guardado exitosamente!
+
+¡Vamos por una semana aún mejor! 💪✨
+
+¿Todo está correcto?
+✅ Sí, continuar
+❌ No, deshacer (volver a semana anterior)`);
+            
+            if (!result) {
+                undoWeekTransition();
+            }
+        }
+        
+        function captureTrackerState() {
+            const state = {};
+            document.querySelectorAll('.day-cell.completed').forEach((cell, index) => {
+                const tracker = cell.closest('[data-tracker]');
+                if (tracker) {
+                    const trackerName = tracker.getAttribute('data-tracker');
+                    if (!state[trackerName]) state[trackerName] = [];
+                    state[trackerName].push(index);
+                }
+            });
+            return state;
+        }
+        
+        function restoreTrackerState(state) {
+            // First clear all
+            document.querySelectorAll('.day-cell:not(.meta-text)').forEach(cell => {
+                cell.classList.remove('completed');
+            });
+            
+            // Then restore
+            Object.keys(state).forEach(trackerName => {
+                const tracker = document.querySelector(`[data-tracker="${trackerName}"]`);
+                if (tracker) {
+                    const cells = tracker.querySelectorAll('.day-cell:not(.meta-text)');
+                    state[trackerName].forEach(index => {
+                        if (cells[index]) cells[index].classList.add('completed');
+                    });
+                }
+            });
+        }
+        
+        function undoWeekTransition() {
+            if (!lastWeekBackup) {
+                alert('❌ No hay transición de semana para deshacer');
+                return;
+            }
+            
+            // Restore previous week
+            currentWeek = lastWeekBackup.weekNumber;
+            
+            // Remove the score from weekScores
+            delete weekScores[currentWeek];
+            
+            // Restore tracker state
+            restoreTrackerState(lastWeekBackup.trackerState);
+            
+            // Update UI
+            updateCurrentWeekDisplay();
+            updateMetrics();
+            updateWeekScoreDisplay();
+            updateOverallStats();
+            
+            // Clear backup
+            lastWeekBackup = null;
+            
+            alert(`🔄 ¡SEMANA RESTAURADA! 🔄
+
+Has vuelto a la Semana ${currentWeek}
+Tu progreso ha sido restaurado.
+
+¡Puedes continuar editando o cerrar nuevamente cuando estés listo! 😊`);
+        }
+        
+        function updateCurrentWeekDisplay() {
+            document.getElementById('current-week-number').textContent = currentWeek;
+            
+            // Update current week in score grid
+            document.querySelectorAll('.week-score').forEach(week => {
+                week.classList.remove('current');
+            });
+            
+            const newCurrentWeek = document.querySelector(`[data-week="${currentWeek}"]`);
+            if (newCurrentWeek) {
+                newCurrentWeek.classList.add('current');
+                newCurrentWeek.querySelector('.score-value').textContent = '70%';
+                newCurrentWeek.querySelector('.score-rank').textContent = '⏳';
+            }
+        }
+        
+        function resetWeeklyTrackers() {
+            document.querySelectorAll('.day-cell:not(.meta-text)').forEach(cell => {
+                cell.classList.remove('completed');
+            });
+            
+            // Reset all counters
+            document.getElementById('exercise-count').textContent = '0';
+            document.getElementById('therapy-count').textContent = '0';
+            document.getElementById('meditation-count').textContent = '0';
+            document.getElementById('portuguese-count').textContent = '0';
+            document.getElementById('book-count').textContent = '0';
+            document.getElementById('family-count').textContent = '0';
+            document.getElementById('friends-count').textContent = '0';
+            document.getElementById('budget-score').textContent = 'NO ❌';
+            document.getElementById('current-week-score').textContent = '70%';
+            document.getElementById('live-score').textContent = '70%';
+        }
+        
+        function updateWeekScoreDisplay() {
+            Object.keys(weekScores).forEach(weekNum => {
+                const weekElement = document.querySelector(`[data-week="${weekNum}"]`);
+                if (weekElement && !weekElement.classList.contains('current')) {
+                    const score = weekScores[weekNum];
+                    weekElement.querySelector('.score-value').textContent = score + '%';
+                    weekElement.querySelector('.score-rank').textContent = getRankEmoji(score);
+                    weekElement.setAttribute('data-score', score);
+                }
+            });
+        }
+        
+        // Update progress bars
+        function updateProgressBars() {
+            document.querySelectorAll('.category-card').forEach(card => {
+                const checkboxes = card.querySelectorAll('.goal-checkbox');
+                const checkedBoxes = card.querySelectorAll('.goal-checkbox:checked');
+                const progressBar = card.querySelector('.progress-fill');
+                
+                if (checkboxes.length > 0) {
+                    const percentage = (checkedBoxes.length / checkboxes.length) * 100;
+                    progressBar.style.width = percentage + '%';
+                }
+            });
+        }
+        
+        // Update project progress
+        function updateProjectProgress() {
+            const completedSteps = document.querySelectorAll('.step-item.completed').length;
+            const totalSteps = document.querySelectorAll('.step-item').length;
+            
+            document.getElementById('completed-steps').textContent = completedSteps;
+            
+            const progressPercent = totalSteps > 0 ? Math.round((completedSteps / totalSteps) * 100) : 0;
+            document.getElementById('progress-percent').textContent = progressPercent + '%';
+        }
+        
+        // Update overall statistics
+        function updateOverallStats() {
+            const allScores = [];
+            document.querySelectorAll('.week-score').forEach(week => {
+                const scoreText = week.querySelector('.score-value').textContent;
+                if (scoreText !== '--' && scoreText.includes('%')) {
+                    allScores.push(parseInt(scoreText.replace('%', '')));
+                }
+            });
+            
+            if (allScores.length > 0) {
+                const average = Math.round(allScores.reduce((a, b) => a + b, 0) / allScores.length);
+                const best = Math.max(...allScores);
+                const excellentWeeks = allScores.filter(score => score >= 90).length;
+                
+                document.getElementById('average-score').textContent = average + '%';
+                document.getElementById('best-week').textContent = best + '%';
+                document.getElementById('streak-count').textContent = excellentWeeks;
+            }
+        }
+        
+        // Dynamic alerts based on current data
+        function updateDynamicAlerts() {
+            const exerciseCount = parseInt(document.getElementById('exercise-count').textContent);
+            const meditationCount = parseInt(document.getElementById('meditation-count').textContent);
+            const portugueseCount = parseInt(document.getElementById('portuguese-count').textContent);
+            const bookCount = parseInt(document.getElementById('book-count').textContent);
+            
+            let alertsHTML = '<h3>🎯 Alertas Dinámicas</h3><div style="margin-top: 15px;">';
+            
+            if (exerciseCount >= 6) {
+                alertsHTML += '<div class="insight-item" style="background: #d4edda; color: #155724; margin-bottom: 10px;"><strong>🔥 ¡Increíble!</strong> ' + exerciseCount + '/7 días de ejercicio. ¡Estás en racha!</div>';
+            } else if (exerciseCount >= 4) {
+                alertsHTML += '<div class="insight-item" style="background: #d1ecf1; color: #0c5460; margin-bottom: 10px;"><strong>✅ Bien!</strong> ' + exerciseCount + '/7 días de ejercicio. Solo ' + (5 - exerciseCount) + ' más para tu meta.</div>';
+            } else {
+                alertsHTML += '<div class="insight-item" style="background: #fff3cd; color: #856404; margin-bottom: 10px;"><strong>⚠️ Alerta:</strong> Solo ' + exerciseCount + '/7 días de ejercicio. ¡Puedes recuperarte!</div>';
+            }
+            
+            if (portugueseCount < 5) {
+                alertsHTML += '<div class="insight-item" style="background: #fff3cd; color: #856404; margin-bottom: 10px;"><strong>🇵🇹 Portugués:</strong> ' + portugueseCount + '/7 días. Recuerda: constancia es clave para el nivel 30.</div>';
+            }
+            
+            if (meditationCount >= 5 && exerciseCount >= 4) {
+                alertsHTML += '<div class="insight-item" style="background: #d4edda; color: #155724; margin-bottom: 10px;"><strong>🧘‍♀️ + 🏃‍♀️ Combo perfecto!</strong> Tu bienestar físico y mental están alineados.</div>';
+            }
+            
+            if (bookCount >= 3) {
+                alertsHTML += '<div class="insight-item" style="background: #d4edda; color: #155724;"><strong>📖 ¡Escritor en acción!</strong> ' + bookCount + ' sesiones esta semana. Tu libro avanza excelente.</div>';
+            }
+            
+            alertsHTML += '</div>';
+            document.getElementById('alerts-content').innerHTML = alertsHTML;
+        }
+        
+        // Click functionality for week scores (to manually input scores)
+        document.querySelectorAll('.week-score').forEach(weekElement => {
+            weekElement.addEventListener('click', function() {
+                if (!this.classList.contains('current')) {
+                    const weekNumber = this.getAttribute('data-week');
+                    const currentScore = this.querySelector('.score-value').textContent;
+                    
+                    if (currentScore === '--') {
+                        const newScore = prompt(`Ingresa tu score para la Semana ${weekNumber} (0-100):`);
+                        if (newScore && newScore >= 0 && newScore <= 100) {
+                            this.querySelector('.score-value').textContent = newScore + '%';
+                            
+                            // Update rank
+                            const rank = getRankEmoji(parseInt(newScore));
+                            this.querySelector('.score-rank').textContent = rank;
+                            this.setAttribute('data-score', newScore);
+                            
+                            updateOverallStats();
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
